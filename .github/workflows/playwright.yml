@@ -76,7 +76,8 @@ jobs:
           node-version: 18
 
       - name: Install Axios
-        run: npm install axios
+        run: npm install axios && ls
+
 
       - name: Send Slack Notification
         run: node send_slack_notification.mjs
