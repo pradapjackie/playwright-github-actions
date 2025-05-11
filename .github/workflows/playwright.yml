@@ -80,7 +80,7 @@ jobs:
 
 
       - name: Send Slack Notification
-        run: node send_slack_notification.mjs
+        run: node send_slack_notification.js
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           ALLURE_REPORT_URL: https://yourdomain.com/allure-report/index.html
