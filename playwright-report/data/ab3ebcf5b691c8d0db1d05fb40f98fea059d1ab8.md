@@ -1,0 +1,225 @@
+# Test info
+
+- Name: Editing >> should hide other controls when editing
+- Location: /Users/josestepha/WebstormProjects/playwright-github-actions-test/tests/demo-todo-app.spec.ts:200:7
+
+# Error details
+
+```
+Error: browserType.launch: Executable doesn't exist at /Users/josestepha/Library/Caches/ms-playwright/chromium_headless_shell-1169/chrome-mac/headless_shell
+╔═════════════════════════════════════════════════════════════════════════╗
+║ Looks like Playwright Test or Playwright was just installed or updated. ║
+║ Please run the following command to download new browsers:              ║
+║                                                                         ║
+║     npx playwright install                                              ║
+║                                                                         ║
+║ <3 Playwright Team                                                      ║
+╚═════════════════════════════════════════════════════════════════════════╝
+```
+
+# Test source
+
+```ts
+  100 |
+  101 |   test('complete all checkbox should update state when items are completed / cleared', async ({ page }) => {
+  102 |     const toggleAll = page.getByLabel('Mark all as complete');
+  103 |     await toggleAll.check();
+  104 |     await expect(toggleAll).toBeChecked();
+  105 |     await checkNumberOfCompletedTodosInLocalStorage(page, 3);
+  106 |
+  107 |     // Uncheck first todo.
+  108 |     const firstTodo = page.getByTestId('todo-item').nth(0);
+  109 |     await firstTodo.getByRole('checkbox').uncheck();
+  110 |
+  111 |     // Reuse toggleAll locator and make sure its not checked.
+  112 |     await expect(toggleAll).not.toBeChecked();
+  113 |
+  114 |     await firstTodo.getByRole('checkbox').check();
+  115 |     await checkNumberOfCompletedTodosInLocalStorage(page, 3);
+  116 |
+  117 |     // Assert the toggle all is checked again.
+  118 |     await expect(toggleAll).toBeChecked();
+  119 |   });
+  120 | });
+  121 |
+  122 | test.describe('Item', () => {
+  123 |
+  124 |   test('should allow me to mark items as complete', async ({ page }) => {
+  125 |     // create a new todo locator
+  126 |     const newTodo = page.getByPlaceholder('What needs to be done?');
+  127 |
+  128 |     // Create two items.
+  129 |     for (const item of TODO_ITEMS.slice(0, 2)) {
+  130 |       await newTodo.fill(item);
+  131 |       await newTodo.press('Enter');
+  132 |     }
+  133 |
+  134 |     // Check first item.
+  135 |     const firstTodo = page.getByTestId('todo-item').nth(0);
+  136 |     await firstTodo.getByRole('checkbox').check();
+  137 |     await expect(firstTodo).toHaveClass('completed');
+  138 |
+  139 |     // Check second item.
+  140 |     const secondTodo = page.getByTestId('todo-item').nth(1);
+  141 |     await expect(secondTodo).not.toHaveClass('completed');
+  142 |     await secondTodo.getByRole('checkbox').check();
+  143 |
+  144 |     // Assert completed class.
+  145 |     await expect(firstTodo).toHaveClass('completed');
+  146 |     await expect(secondTodo).toHaveClass('completed');
+  147 |   });
+  148 |
+  149 |   test('should allow me to un-mark items as complete', async ({ page }) => {
+  150 |     // create a new todo locator
+  151 |     const newTodo = page.getByPlaceholder('What needs to be done?');
+  152 |
+  153 |     // Create two items.
+  154 |     for (const item of TODO_ITEMS.slice(0, 2)) {
+  155 |       await newTodo.fill(item);
+  156 |       await newTodo.press('Enter');
+  157 |     }
+  158 |
+  159 |     const firstTodo = page.getByTestId('todo-item').nth(0);
+  160 |     const secondTodo = page.getByTestId('todo-item').nth(1);
+  161 |     const firstTodoCheckbox = firstTodo.getByRole('checkbox');
+  162 |
+  163 |     await firstTodoCheckbox.check();
+  164 |     await expect(firstTodo).toHaveClass('completed');
+  165 |     await expect(secondTodo).not.toHaveClass('completed');
+  166 |     await checkNumberOfCompletedTodosInLocalStorage(page, 1);
+  167 |
+  168 |     await firstTodoCheckbox.uncheck();
+  169 |     await expect(firstTodo).not.toHaveClass('completed');
+  170 |     await expect(secondTodo).not.toHaveClass('completed');
+  171 |     await checkNumberOfCompletedTodosInLocalStorage(page, 0);
+  172 |   });
+  173 |
+  174 |   test('should allow me to edit an item', async ({ page }) => {
+  175 |     await createDefaultTodos(page);
+  176 |
+  177 |     const todoItems = page.getByTestId('todo-item');
+  178 |     const secondTodo = todoItems.nth(1);
+  179 |     await secondTodo.dblclick();
+  180 |     await expect(secondTodo.getByRole('textbox', { name: 'Edit' })).toHaveValue(TODO_ITEMS[1]);
+  181 |     await secondTodo.getByRole('textbox', { name: 'Edit' }).fill('buy some sausages');
+  182 |     await secondTodo.getByRole('textbox', { name: 'Edit' }).press('Enter');
+  183 |
+  184 |     // Explicitly assert the new text value.
+  185 |     await expect(todoItems).toHaveText([
+  186 |       TODO_ITEMS[0],
+  187 |       'buy some sausages',
+  188 |       TODO_ITEMS[2]
+  189 |     ]);
+  190 |     await checkTodosInLocalStorage(page, 'buy some sausages');
+  191 |   });
+  192 | });
+  193 |
+  194 | test.describe('Editing', () => {
+  195 |   test.beforeEach(async ({ page }) => {
+  196 |     await createDefaultTodos(page);
+  197 |     await checkNumberOfTodosInLocalStorage(page, 3);
+  198 |   });
+  199 |
+> 200 |   test('should hide other controls when editing', async ({ page }) => {
+      |       ^ Error: browserType.launch: Executable doesn't exist at /Users/josestepha/Library/Caches/ms-playwright/chromium_headless_shell-1169/chrome-mac/headless_shell
+  201 |     const todoItem = page.getByTestId('todo-item').nth(1);
+  202 |     await todoItem.dblclick();
+  203 |     await expect(todoItem.getByRole('checkbox')).not.toBeVisible();
+  204 |     await expect(todoItem.locator('label', {
+  205 |       hasText: TODO_ITEMS[1],
+  206 |     })).not.toBeVisible();
+  207 |     await checkNumberOfTodosInLocalStorage(page, 3);
+  208 |   });
+  209 |
+  210 |   test('should save edits on blur', async ({ page }) => {
+  211 |     const todoItems = page.getByTestId('todo-item');
+  212 |     await todoItems.nth(1).dblclick();
+  213 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('buy some sausages');
+  214 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).dispatchEvent('blur');
+  215 |
+  216 |     await expect(todoItems).toHaveText([
+  217 |       TODO_ITEMS[0],
+  218 |       'buy some sausages',
+  219 |       TODO_ITEMS[2],
+  220 |     ]);
+  221 |     await checkTodosInLocalStorage(page, 'buy some sausages');
+  222 |   });
+  223 |
+  224 |   test('should trim entered text', async ({ page }) => {
+  225 |     const todoItems = page.getByTestId('todo-item');
+  226 |     await todoItems.nth(1).dblclick();
+  227 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('    buy some sausages    ');
+  228 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).press('Enter');
+  229 |
+  230 |     await expect(todoItems).toHaveText([
+  231 |       TODO_ITEMS[0],
+  232 |       'buy some sausages',
+  233 |       TODO_ITEMS[2],
+  234 |     ]);
+  235 |     await checkTodosInLocalStorage(page, 'buy some sausages');
+  236 |   });
+  237 |
+  238 |   test('should remove the item if an empty text string was entered', async ({ page }) => {
+  239 |     const todoItems = page.getByTestId('todo-item');
+  240 |     await todoItems.nth(1).dblclick();
+  241 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('');
+  242 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).press('Enter');
+  243 |
+  244 |     await expect(todoItems).toHaveText([
+  245 |       TODO_ITEMS[0],
+  246 |       TODO_ITEMS[2],
+  247 |     ]);
+  248 |   });
+  249 |
+  250 |   test('should cancel edits on escape', async ({ page }) => {
+  251 |     const todoItems = page.getByTestId('todo-item');
+  252 |     await todoItems.nth(1).dblclick();
+  253 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('buy some sausages');
+  254 |     await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).press('Escape');
+  255 |     await expect(todoItems).toHaveText(TODO_ITEMS);
+  256 |   });
+  257 | });
+  258 |
+  259 | test.describe('Counter', () => {
+  260 |   test('should display the current number of todo items', async ({ page }) => {
+  261 |     // create a new todo locator
+  262 |     const newTodo = page.getByPlaceholder('What needs to be done?');
+  263 |     
+  264 |     // create a todo count locator
+  265 |     const todoCount = page.getByTestId('todo-count')
+  266 |
+  267 |     await newTodo.fill(TODO_ITEMS[0]);
+  268 |     await newTodo.press('Enter');
+  269 |
+  270 |     await expect(todoCount).toContainText('1');
+  271 |
+  272 |     await newTodo.fill(TODO_ITEMS[1]);
+  273 |     await newTodo.press('Enter');
+  274 |     await expect(todoCount).toContainText('2');
+  275 |
+  276 |     await checkNumberOfTodosInLocalStorage(page, 2);
+  277 |   });
+  278 | });
+  279 |
+  280 | test.describe('Clear completed button', () => {
+  281 |   test.beforeEach(async ({ page }) => {
+  282 |     await createDefaultTodos(page);
+  283 |   });
+  284 |
+  285 |   test('should display the correct text', async ({ page }) => {
+  286 |     await page.locator('.todo-list li .toggle').first().check();
+  287 |     await expect(page.getByRole('button', { name: 'Clear completed' })).toBeVisible();
+  288 |   });
+  289 |
+  290 |   test('should remove completed items when clicked', async ({ page }) => {
+  291 |     const todoItems = page.getByTestId('todo-item');
+  292 |     await todoItems.nth(1).getByRole('checkbox').check();
+  293 |     await page.getByRole('button', { name: 'Clear completed' }).click();
+  294 |     await expect(todoItems).toHaveCount(2);
+  295 |     await expect(todoItems).toHaveText([TODO_ITEMS[0], TODO_ITEMS[2]]);
+  296 |   });
+  297 |
+  298 |   test('should be hidden when there are no items that are completed', async ({ page }) => {
+  299 |     await page.locator('.todo-list li .toggle').first().check();
+  300 |     await page.getByRole('button', { name: 'Clear completed' }).click();
+```
